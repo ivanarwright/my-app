@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sL https://github.com/cli/cli/releases/download/v2.67.0/gh_2.67.0_macOS_arm64.zip -o /tmp/gh.zip && unzip -o /tmp/gh.zip -d /tmp/gh && mkdir -p \"$HOME/.local/bin\" && cp /tmp/gh/gh_2.67.0_macOS_arm64/bin/gh \"$HOME/.local/bin/gh\" && rm -rf /tmp/gh /tmp/gh.zip && echo \"gh installed to ~/.local/bin\" 2>&1)",
+      "Bash(export PATH=\"$HOME/.local/bin:$PATH\" && gh auth status 2>&1)",
+      "Bash(cp -r /tmp/my-app-temp/. /Users/ivanawright/projects/my-app/ && rm -rf /tmp/my-app-temp)"
+    ]
+  }
+}
