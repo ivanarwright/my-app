@@ -1,5 +1,8 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { db } from "@/db";
+import { responses } from "@/db/schema";
+import { eq, and, desc } from "drizzle-orm";
 import { UserNav } from "@/components/user-nav";
 import {
   Card,
@@ -9,12 +12,28 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { submitResponse } from "./actions";
 
 export default async function Dashboard() {
   const session = await auth();
   if (!session?.user) redirect("/");
 
   const user = session.user;
+
+  const hobbyResults = await db
+    .select()
+    .from(responses)
+    .where(
+      and(
+        eq(responses.userId, user.id!),
+        eq(responses.question, "What is your favourite hobby?")
+      )
+    )
+    .orderBy(desc(responses.createdAt))
+    .limit(1);
+
+  const hobbyResponse = hobbyResults[0] ?? null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,7 +44,7 @@ export default async function Dashboard() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 py-12 space-y-6">
         <Card className="max-w-lg mx-auto">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -45,8 +64,31 @@ export default async function Dashboard() {
             </CardTitle>
             <CardDescription>{user.email}</CardDescription>
           </CardHeader>
-          <CardContent className="text-center text-muted-foreground">
-            <p>You&apos;re signed in. This is your dashboard.</p>
+        </Card>
+
+        <Card className="max-w-lg mx-auto">
+          <CardHeader>
+            <CardTitle>What is your favourite hobby?</CardTitle>
+            {hobbyResponse && (
+              <CardDescription>
+                Your answer: {hobbyResponse.answer}
+              </CardDescription>
+            )}
+          </CardHeader>
+          <CardContent>
+            <form action={submitResponse} className="flex gap-2">
+              <input
+                type="text"
+                name="answer"
+                placeholder="Enter your answer..."
+                defaultValue={hobbyResponse?.answer ?? ""}
+                required
+                className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <Button type="submit">
+                {hobbyResponse ? "Update" : "Submit"}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </main>

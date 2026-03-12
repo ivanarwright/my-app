@@ -5,6 +5,7 @@ import {
   primaryKey,
   integer,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import type { AdapterAccountType } from "next-auth/adapters";
 
 export const users = pgTable("user", {
@@ -47,6 +48,20 @@ export const sessions = pgTable("session", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   expires: timestamp("expires", { mode: "date" }).notNull(),
+});
+
+export const responses = pgTable("response", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  createdAt: timestamp("createdAt", { mode: "date" })
+    .notNull()
+    .default(sql`now()`),
 });
 
 export const verificationTokens = pgTable(
