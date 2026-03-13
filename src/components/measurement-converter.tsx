@@ -23,6 +23,10 @@ function cmToInches(cm: number): string {
   return (cm / 2.54).toFixed(1);
 }
 
+function inchesToCm(inches: number): string {
+  return (inches * 2.54).toFixed(1);
+}
+
 const SIZE_RANGES: Record<string, { label: string; max: number }[]> = {
   height: [
     { label: "Petite", max: 160 },
@@ -78,13 +82,43 @@ type Props = {
 };
 
 export function MeasurementConverter({ saved }: Props) {
-  const [values, setValues] = useState<Record<string, string>>(() => {
+  const [cmValues, setCmValues] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
     for (const key of MEASUREMENTS) {
       if (saved[key] != null) initial[key] = String(saved[key]);
     }
     return initial;
   });
+  const [inValues, setInValues] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    for (const key of MEASUREMENTS) {
+      if (saved[key] != null) initial[key] = cmToInches(saved[key]!);
+    }
+    return initial;
+  });
+
+  function handleCmChange(name: string, value: string) {
+    setCmValues((prev) => ({ ...prev, [name]: value }));
+    const parsed = parseFloat(value);
+    if (!isNaN(parsed) && parsed > 0) {
+      setInValues((prev) => ({ ...prev, [name]: cmToInches(parsed) }));
+    } else {
+      setInValues((prev) => ({ ...prev, [name]: "" }));
+    }
+  }
+
+  function handleInChange(name: string, value: string) {
+    setInValues((prev) => ({ ...prev, [name]: value }));
+    const parsed = parseFloat(value);
+    if (!isNaN(parsed) && parsed > 0) {
+      setCmValues((prev) => ({ ...prev, [name]: inchesToCm(parsed) }));
+    } else {
+      setCmValues((prev) => ({ ...prev, [name]: "" }));
+    }
+  }
+
+  const inputClass =
+    "w-24 shrink-0 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
     <Card className="max-w-4xl mx-auto">
@@ -95,8 +129,7 @@ export function MeasurementConverter({ saved }: Props) {
         <form action={saveMeasurements}>
           <div className="space-y-4">
             {MEASUREMENTS.map((name) => {
-              const cm = parseFloat(values[name] || "");
-              const inches = !isNaN(cm) && cm > 0 ? cmToInches(cm) : null;
+              const cm = parseFloat(cmValues[name] || "");
               const size =
                 !isNaN(cm) && cm > 0 ? getSize(name, cm) : null;
 
@@ -105,35 +138,28 @@ export function MeasurementConverter({ saved }: Props) {
                   <label className="w-16 shrink-0 text-sm font-medium">
                     {LABELS[name]}
                   </label>
+                  <input type="hidden" name={name} value={cmValues[name] || ""} />
                   <input
                     type="number"
-                    name={name}
                     placeholder="cm"
-                    value={values[name] || ""}
-                    onChange={(e) =>
-                      setValues((prev) => ({
-                        ...prev,
-                        [name]: e.target.value,
-                      }))
-                    }
-                    className="w-24 shrink-0 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    value={cmValues[name] || ""}
+                    onChange={(e) => handleCmChange(name, e.target.value)}
+                    className={inputClass}
                   />
-                  {(inches || size) && (
+                  <input
+                    type="number"
+                    placeholder="in"
+                    value={inValues[name] || ""}
+                    onChange={(e) => handleInChange(name, e.target.value)}
+                    className={inputClass}
+                  />
+                  {size && (
                     <div className="flex items-center gap-2">
-                      {inches && (
-                        <span className="w-20 shrink-0 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-sm font-medium text-primary text-center">
-                          <span className="block text-[10px] uppercase tracking-wide text-primary/60">
-                            in
-                          </span>
-                          {inches}
-                        </span>
-                      )}
-                      {size && name === "height" && (
+                      {name === "height" ? (
                         <span className="w-24 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-sm font-medium text-primary text-center">
                           {size}
                         </span>
-                      )}
-                      {size && name !== "height" &&
+                      ) : (
                         Object.entries(SIZE_CONVERSIONS[size] || {}).map(
                           ([region, regionSize]) => (
                             <span
@@ -146,7 +172,8 @@ export function MeasurementConverter({ saved }: Props) {
                               {regionSize}
                             </span>
                           )
-                        )}
+                        )
+                      )}
                     </div>
                   )}
                 </div>
