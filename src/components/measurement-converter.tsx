@@ -118,16 +118,22 @@ export function MeasurementConverter({ saved }: Props) {
                     }
                     className="w-24 shrink-0 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
-                  <span className="text-sm text-muted-foreground w-20 shrink-0">
-                    {inches ? `= ${inches} in` : ""}
-                  </span>
-                  {size && (
+                  {(inches || size) && (
                     <div className="flex items-center gap-2">
-                      {name === "height" ? (
+                      {inches && (
+                        <span className="w-20 shrink-0 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-sm font-medium text-primary text-center">
+                          <span className="block text-[10px] uppercase tracking-wide text-primary/60">
+                            in
+                          </span>
+                          {inches}
+                        </span>
+                      )}
+                      {size && name === "height" && (
                         <span className="w-24 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-sm font-medium text-primary text-center">
                           {size}
                         </span>
-                      ) : (
+                      )}
+                      {size && name !== "height" &&
                         Object.entries(SIZE_CONVERSIONS[size] || {}).map(
                           ([region, regionSize]) => (
                             <span
@@ -140,8 +146,7 @@ export function MeasurementConverter({ saved }: Props) {
                               {regionSize}
                             </span>
                           )
-                        )
-                      )}
+                        )}
                     </div>
                   )}
                 </div>
