@@ -1,19 +1,18 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { responses } from "@/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { measurements, clothingSizes } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { UserNav } from "@/components/user-nav";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { submitResponse } from "./actions";
+import { MeasurementConverter } from "@/components/measurement-converter";
+import { ClothingSizes } from "@/components/clothing-sizes";
 
 export default async function Dashboard() {
   const session = await auth();
@@ -21,19 +20,33 @@ export default async function Dashboard() {
 
   const user = session.user;
 
-  const hobbyResults = await db
-    .select()
-    .from(responses)
-    .where(
-      and(
-        eq(responses.userId, user.id!),
-        eq(responses.question, "What is your favourite hobby?")
-      )
-    )
-    .orderBy(desc(responses.createdAt))
-    .limit(1);
+  const [measurementRows, clothingRows] = await Promise.all([
+    db
+      .select()
+      .from(measurements)
+      .where(eq(measurements.userId, user.id!))
+      .limit(1),
+    db
+      .select()
+      .from(clothingSizes)
+      .where(eq(clothingSizes.userId, user.id!))
+      .limit(1),
+  ]);
 
-  const hobbyResponse = hobbyResults[0] ?? null;
+  const savedMeasurements = measurementRows[0] ?? {
+    height: null,
+    waist: null,
+    torso: null,
+    hips: null,
+  };
+
+  const savedClothing = clothingRows[0] ?? {
+    tops: null,
+    bottoms: null,
+    coats: null,
+    shoeLeft: null,
+    shoeRight: null,
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -66,31 +79,8 @@ export default async function Dashboard() {
           </CardHeader>
         </Card>
 
-        <Card className="max-w-lg mx-auto">
-          <CardHeader>
-            <CardTitle>What is your favourite hobby?</CardTitle>
-            {hobbyResponse && (
-              <CardDescription>
-                Your answer: {hobbyResponse.answer}
-              </CardDescription>
-            )}
-          </CardHeader>
-          <CardContent>
-            <form action={submitResponse} className="flex gap-2">
-              <input
-                type="text"
-                name="answer"
-                placeholder="Enter your answer..."
-                defaultValue={hobbyResponse?.answer ?? ""}
-                required
-                className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-              <Button type="submit">
-                {hobbyResponse ? "Update" : "Submit"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        <MeasurementConverter saved={savedMeasurements} />
+        <ClothingSizes saved={savedClothing} />
       </main>
     </div>
   );

@@ -4,6 +4,7 @@ import {
   text,
   primaryKey,
   integer,
+  real,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import type { AdapterAccountType } from "next-auth/adapters";
@@ -60,6 +61,41 @@ export const responses = pgTable("response", {
   question: text("question").notNull(),
   answer: text("answer").notNull(),
   createdAt: timestamp("createdAt", { mode: "date" })
+    .notNull()
+    .default(sql`now()`),
+});
+
+export const measurements = pgTable("measurement", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" })
+    .unique(),
+  height: real("height"),
+  waist: real("waist"),
+  torso: real("torso"),
+  hips: real("hips"),
+  updatedAt: timestamp("updatedAt", { mode: "date" })
+    .notNull()
+    .default(sql`now()`),
+});
+
+export const clothingSizes = pgTable("clothing_size", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" })
+    .unique(),
+  tops: text("tops"),
+  bottoms: text("bottoms"),
+  coats: text("coats"),
+  shoeLeft: real("shoeLeft"),
+  shoeRight: real("shoeRight"),
+  updatedAt: timestamp("updatedAt", { mode: "date" })
     .notNull()
     .default(sql`now()`),
 });

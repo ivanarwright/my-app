@@ -2,36 +2,72 @@
 
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { responses } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { measurements, clothingSizes } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-export async function submitResponse(formData: FormData) {
+export async function saveMeasurements(formData: FormData) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Not authenticated");
 
-  const answer = formData.get("answer") as string;
-  if (!answer?.trim()) return;
+  const height = parseFloat(formData.get("height") as string) || null;
+  const waist = parseFloat(formData.get("waist") as string) || null;
+  const torso = parseFloat(formData.get("torso") as string) || null;
+  const hips = parseFloat(formData.get("hips") as string) || null;
 
-  const question = "What is your favourite hobby?";
   const existing = await db
     .select()
-    .from(responses)
-    .where(
-      and(eq(responses.userId, session.user.id), eq(responses.question, question))
-    )
+    .from(measurements)
+    .where(eq(measurements.userId, session.user.id))
     .limit(1);
 
   if (existing.length > 0) {
     await db
-      .update(responses)
-      .set({ answer: answer.trim() })
-      .where(eq(responses.id, existing[0].id));
+      .update(measurements)
+      .set({ height, waist, torso, hips, updatedAt: new Date() })
+      .where(eq(measurements.userId, session.user.id));
   } else {
-    await db.insert(responses).values({
+    await db.insert(measurements).values({
       userId: session.user.id,
-      question,
-      answer: answer.trim(),
+      height,
+      waist,
+      torso,
+      hips,
+    });
+  }
+
+  revalidatePath("/dashboard");
+}
+
+export async function saveClothingSizes(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Not authenticated");
+
+  const tops = (formData.get("tops") as string) || null;
+  const bottoms = (formData.get("bottoms") as string) || null;
+  const coats = (formData.get("coats") as string) || null;
+  const shoeLeft = parseFloat(formData.get("shoeLeft") as string) || null;
+  const shoeRight = parseFloat(formData.get("shoeRight") as string) || null;
+
+  const existing = await db
+    .select()
+    .from(clothingSizes)
+    .where(eq(clothingSizes.userId, session.user.id))
+    .limit(1);
+
+  if (existing.length > 0) {
+    await db
+      .update(clothingSizes)
+      .set({ tops, bottoms, coats, shoeLeft, shoeRight, updatedAt: new Date() })
+      .where(eq(clothingSizes.userId, session.user.id));
+  } else {
+    await db.insert(clothingSizes).values({
+      userId: session.user.id,
+      tops,
+      bottoms,
+      coats,
+      shoeLeft,
+      shoeRight,
     });
   }
 
