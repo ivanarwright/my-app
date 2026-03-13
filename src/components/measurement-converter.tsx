@@ -87,7 +87,7 @@ export function MeasurementConverter({ saved }: Props) {
   });
 
   return (
-    <Card className="max-w-2xl mx-auto">
+    <Card className="max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle>Body Measurements</CardTitle>
       </CardHeader>
@@ -101,32 +101,30 @@ export function MeasurementConverter({ saved }: Props) {
                 !isNaN(cm) && cm > 0 ? getSize(name, cm) : null;
 
               return (
-                <div key={name} className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <label className="w-16 text-sm font-medium">
-                      {LABELS[name]}
-                    </label>
-                    <input
-                      type="number"
-                      name={name}
-                      placeholder="cm"
-                      value={values[name] || ""}
-                      onChange={(e) =>
-                        setValues((prev) => ({
-                          ...prev,
-                          [name]: e.target.value,
-                        }))
-                      }
-                      className="w-24 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    />
-                    <span className="text-sm text-muted-foreground w-20">
-                      {inches ? `= ${inches} in` : ""}
-                    </span>
-                  </div>
+                <div key={name} className="flex items-center gap-3">
+                  <label className="w-16 shrink-0 text-sm font-medium">
+                    {LABELS[name]}
+                  </label>
+                  <input
+                    type="number"
+                    name={name}
+                    placeholder="cm"
+                    value={values[name] || ""}
+                    onChange={(e) =>
+                      setValues((prev) => ({
+                        ...prev,
+                        [name]: e.target.value,
+                      }))
+                    }
+                    className="w-24 shrink-0 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <span className="text-sm text-muted-foreground w-20 shrink-0">
+                    {inches ? `= ${inches} in` : ""}
+                  </span>
                   {size && (
-                    <div className="ml-[calc(4rem+0.75rem)] grid grid-cols-5 gap-2">
+                    <div className="flex items-center gap-2">
                       {name === "height" ? (
-                        <span className="col-span-5 w-24 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-sm font-medium text-primary text-center">
+                        <span className="w-24 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-sm font-medium text-primary text-center">
                           {size}
                         </span>
                       ) : (
@@ -134,7 +132,7 @@ export function MeasurementConverter({ saved }: Props) {
                           ([region, regionSize]) => (
                             <span
                               key={region}
-                              className="rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-sm font-medium text-primary text-center"
+                              className="w-20 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-sm font-medium text-primary text-center"
                             >
                               <span className="block text-[10px] uppercase tracking-wide text-primary/60">
                                 {region}
