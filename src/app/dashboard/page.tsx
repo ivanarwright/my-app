@@ -33,19 +33,21 @@ export default async function Dashboard() {
       .limit(1),
   ]);
 
-  const savedMeasurements = measurementRows[0] ?? {
-    height: null,
-    waist: null,
-    torso: null,
-    hips: null,
+  const m = measurementRows[0];
+  const savedMeasurements = {
+    height: m?.height ?? null,
+    waist: m?.waist ?? null,
+    torso: m?.torso ?? null,
+    hips: m?.hips ?? null,
   };
 
-  const savedClothing = clothingRows[0] ?? {
-    tops: null,
-    bottoms: null,
-    coats: null,
-    shoeLeft: null,
-    shoeRight: null,
+  const c = clothingRows[0];
+  const savedClothing = {
+    tops: c?.tops ?? null,
+    bottoms: c?.bottoms ?? null,
+    coats: c?.coats ?? null,
+    shoeLeft: c?.shoeLeft ?? null,
+    shoeRight: c?.shoeRight ?? null,
   };
 
   return (
