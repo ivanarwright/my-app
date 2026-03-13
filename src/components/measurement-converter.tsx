@@ -55,6 +55,15 @@ const SIZE_RANGES: Record<string, { label: string; max: number }[]> = {
   ],
 };
 
+const SIZE_CONVERSIONS: Record<string, Record<string, string>> = {
+  XS:  { US: "XS",  UK: "4-6",   JP: "5",    FR: "32-34", IT: "36-38" },
+  S:   { US: "S",   UK: "8-10",  JP: "7",    FR: "36-38", IT: "40-42" },
+  M:   { US: "M",   UK: "12-14", JP: "9-11", FR: "40-42", IT: "44-46" },
+  L:   { US: "L",   UK: "16-18", JP: "13-15", FR: "44-46", IT: "48-50" },
+  XL:  { US: "XL",  UK: "20-22", JP: "17-19", FR: "48-50", IT: "52-54" },
+  XXL: { US: "XXL", UK: "24-26", JP: "21-23", FR: "52-54", IT: "56-58" },
+};
+
 function getSize(measurement: string, cm: number): string | null {
   const ranges = SIZE_RANGES[measurement];
   if (!ranges) return null;
@@ -113,9 +122,24 @@ export function MeasurementConverter({ saved }: Props) {
                     {inches ? `= ${inches} in` : ""}
                   </span>
                   {size && (
-                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                      {size}
-                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {name === "height" ? (
+                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                          {size}
+                        </span>
+                      ) : (
+                        Object.entries(SIZE_CONVERSIONS[size] || {}).map(
+                          ([region, regionSize]) => (
+                            <span
+                              key={region}
+                              className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+                            >
+                              {region}: {regionSize}
+                            </span>
+                          )
+                        )
+                      )}
+                    </div>
                   )}
                 </div>
               );
