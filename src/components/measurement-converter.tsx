@@ -23,6 +23,47 @@ function cmToInches(cm: number): string {
   return (cm / 2.54).toFixed(1);
 }
 
+const SIZE_RANGES: Record<string, { label: string; max: number }[]> = {
+  height: [
+    { label: "Petite", max: 160 },
+    { label: "Regular", max: 175 },
+    { label: "Tall", max: Infinity },
+  ],
+  waist: [
+    { label: "XS", max: 66 },
+    { label: "S", max: 71 },
+    { label: "M", max: 81 },
+    { label: "L", max: 91 },
+    { label: "XL", max: 101 },
+    { label: "XXL", max: Infinity },
+  ],
+  torso: [
+    { label: "XS", max: 40 },
+    { label: "S", max: 43 },
+    { label: "M", max: 46 },
+    { label: "L", max: 49 },
+    { label: "XL", max: 52 },
+    { label: "XXL", max: Infinity },
+  ],
+  hips: [
+    { label: "XS", max: 86 },
+    { label: "S", max: 91 },
+    { label: "M", max: 99 },
+    { label: "L", max: 107 },
+    { label: "XL", max: 117 },
+    { label: "XXL", max: Infinity },
+  ],
+};
+
+function getSize(measurement: string, cm: number): string | null {
+  const ranges = SIZE_RANGES[measurement];
+  if (!ranges) return null;
+  for (const range of ranges) {
+    if (cm <= range.max) return range.label;
+  }
+  return null;
+}
+
 type Props = {
   saved: Record<string, number | null>;
 };
@@ -47,6 +88,8 @@ export function MeasurementConverter({ saved }: Props) {
             {MEASUREMENTS.map((name) => {
               const cm = parseFloat(values[name] || "");
               const inches = !isNaN(cm) && cm > 0 ? cmToInches(cm) : null;
+              const size =
+                !isNaN(cm) && cm > 0 ? getSize(name, cm) : null;
 
               return (
                 <div key={name} className="flex items-center gap-3">
@@ -66,9 +109,14 @@ export function MeasurementConverter({ saved }: Props) {
                     }
                     className="w-24 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm text-muted-foreground w-20">
                     {inches ? `= ${inches} in` : ""}
                   </span>
+                  {size && (
+                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                      {size}
+                    </span>
+                  )}
                 </div>
               );
             })}
